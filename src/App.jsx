@@ -150,8 +150,6 @@ export default function App() {
   const [showPicker, setShowPicker] = useState(false);
   const [pickerColor, setPickerColor] = useState("#00FF8888");
 
-  const [palette, setPalette] = useState([]);
-
   const handleClick = () => hiddenFileInput.current.click();
 
   const handleDrop = (e) => {
@@ -222,13 +220,15 @@ export default function App() {
         ];
 
         if (TextureHelper.IsNormalRegion(x, y, textureType)) {
-          id =
-            ((r & 0x02) << 4) +
-            ((g & 0x02) << 3) +
-            ((b & 0x02) << 2) +
-            ((r & 0x01) << 2) +
-            ((g & 0x01) << 1) +
-            ((b & 0x01) << 0);
+          if (hasData) {
+            id =
+              ((r & 0x02) << 4) +
+              ((g & 0x02) << 3) +
+              ((b & 0x02) << 2) +
+              ((r & 0x01) << 2) +
+              ((g & 0x01) << 1) +
+              ((b & 0x01) << 0);
+          }
 
           r &= 252;
           g &= 252;

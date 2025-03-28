@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-const TexturePixel = ({ rgba, programId, onClick, editable, programVisible, programs }) => {
+const TexturePixel = ({ rgba, programId, onClick, editable, programVisible, index }) => {
 
   const rgba2color = (rgba) => {
     return `rgb(${rgba.r},${rgba.g},${rgba.b},${rgba.a / 255.0})`
