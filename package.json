@@ -1,0 +1,54 @@
+{
+  "name": "animated-entities",
+  "version": "0.1.0",
+  "homepage": "https://dqwertyc.github.io/animated-entities/",
+  "private": true,
+  "dependencies": {
+    "@testing-library/react": "^13.4.0",
+    "@uiw/react-color": "^2.4.5",
+    "lucide-react": "^0.460.0",
+    "pngjs": "^7.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hot-toast": "^2.5.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "tail": "npx tailwindcss -i ./src/input.css -o ./src/index.css --watch"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.4",
+    "gh-pages": "^6.2.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "react-scripts": "^5.0.1",
+    "tailwindcss": "^3.4.15",
+    "webpack-cli": "^5.1.4"
+  }
+}
