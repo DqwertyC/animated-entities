@@ -1,4 +1,13 @@
-import { ImageIcon, Copy, Download, Eye, EyeClosed } from "lucide-react";
+import {
+  ImageIcon,
+  Download,
+  Eye,
+  EyeClosed,
+  Pause,
+  Play,
+  Youtube,
+  Github,
+} from "lucide-react";
 import React, {
   useEffect,
   useRef,
@@ -14,6 +23,7 @@ import TexturePixel from "./TexturePixel";
 import ProgramPixel from "./ProgramPixel";
 import PalettePixel from "./PalettePixel";
 import ProgramPreview from "./ProgramPreview";
+import { rgbaToHexa, rgbaToColor } from "./ColorUtils";
 
 const programInfo = [
   {
@@ -88,6 +98,15 @@ const programInfo = [
     nibbleName: "Offset:",
     hasColorB: true,
   },
+  {
+    programName: "Heartbeat",
+    boolNameA: "Invert:",
+    boolNameB: "Reverse:",
+    crumbName: "Delay:",
+    crumbIsDir: false,
+    nibbleName: "Offset:",
+    hasColorB: true,
+  },
 ];
 
 const hexToRgba = (hex) => {
@@ -97,18 +116,6 @@ const hexToRgba = (hex) => {
   let a = Number.parseInt(hex.substring(7, 9), 16);
 
   return { r, g, b, a };
-};
-
-const rgbaToHexa = ({ r, g, b, a }) => {
-  return `#${[r, g, b, a].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-};
-
-const rgba2color = (rgba) => {
-  return `rgb(${rgba.r},${rgba.g},${rgba.b},${rgba.a / 255.0})`;
-};
-
-const rgbaToStr = ({ r, g, b, a }) => {
-  return `${r}, ${g}, ${b}, ${a}`;
 };
 
 const getFinalColor = ({ color, program }) => {
@@ -159,6 +166,17 @@ export default function App() {
   const [pickerColor, setPickerColor] = useState("#FFFFFFFF");
 
   const [mouseDown, setMouseDown] = useState(false);
+
+  const [gameTime, setGameTime] = useState(0);
+  const [playing, setPlaying] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(
+      () => playing && setGameTime((old) => (old < 200 ? old + 1 : 0)),
+      50,
+    );
+    return () => clearTimeout(timer);
+  }, [playing, gameTime]);
 
   const handleClick = () => hiddenFileInput.current.click();
 
@@ -511,9 +529,6 @@ export default function App() {
             Requires the Animated Entity shader. <br />
             Currently supports Humanoids, Cows, Pigs, and Chickens.
           </p>
-          {textureType}
-          <br />
-          {mouseDown ? "down" : "up"}
         </header>
 
         {textureConfirmed ? (
@@ -641,14 +656,13 @@ export default function App() {
                       alignItems: "center",
                       justifyContent: "center",
                     }}
-                    onClick={() => {
-                      console.log("button a");
-                    }}
+                    href="https://github.com/DqwertyC/animated-entities"
+                    target="_blank"
                   >
-                    <Eye className="mx-auto text-gray-50" />
+                    <Github className="mx-auto text-gray-50" />
                   </button>
 
-                  <button
+                  <a
                     className="flex bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
                     style={{
                       width: "45%",
@@ -658,12 +672,11 @@ export default function App() {
                       alignItems: "center",
                       justifyContent: "center",
                     }}
-                    onClick={() => {
-                      console.log("button b");
-                    }}
+                    href="https://www.youtube.com/@DqwertyC"
+                    target="_blank"
                   >
-                    <Eye className="mx-auto text-gray-50" />
-                  </button>
+                    <Youtube className="mx-auto text-gray-50" />
+                  </a>
                 </div>
               </div>
               <div style={{ width: "32px" }} />
@@ -794,6 +807,9 @@ export default function App() {
                             <option className="text-sm px-1" value={7}>
                               {programInfo[7].programName}
                             </option>
+                            <option className="text-sm px-1" value={8}>
+                              {programInfo[8].programName}
+                            </option>
                           </select>
                         </div>
                         <div
@@ -853,7 +869,7 @@ export default function App() {
                             style={{
                               width: "20%",
                               height: "24px",
-                              backgroundColor: rgba2color(
+                              backgroundColor: rgbaToColor(
                                 palettePixels[editorColorA].color,
                               ),
                               borderColor: "white",
@@ -879,7 +895,7 @@ export default function App() {
                                 style={{
                                   width: "20%",
                                   height: "24px",
-                                  backgroundColor: rgba2color(
+                                  backgroundColor: rgbaToColor(
                                     palettePixels[editorColorB].color,
                                   ),
                                   borderColor: "white",
@@ -1184,7 +1200,11 @@ export default function App() {
 
                 <div
                   className="bg-gray-500 rounded-lg p-2 shadow-xl"
-                  style={{ height: "256px", width: "210px" }}
+                  style={{
+                    height: "256px",
+                    width: "210px",
+                    justifyContent: "space-between",
+                  }}
                 >
                   <div style={{ height: "8px" }} />
                   {selectedProgram === 0 ? (
@@ -1197,12 +1217,54 @@ export default function App() {
                       texture.
                     </div>
                   ) : (
-                    <div style={{ width: "64px", height: "64px" }}>
-                      <ProgramPreview
-                        program={previewColor}
-                        colors={palettePixels}
-                      />
-                    </div>
+                    <>
+                      <div style={{ width: "80%", height: "80%" }}>
+                        <ProgramPreview
+                          program={previewColor}
+                          colors={palettePixels}
+                          time={gameTime}
+                        />
+                      </div>
+                      <div
+                        className="flex flex-row"
+                        style={{
+                          width: "100%",
+                          height: "20%",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <input
+                          style={{ width: "80%" }}
+                          type="range"
+                          min={0}
+                          max={200}
+                          step={1}
+                          onChange={(e) => {
+                            setGameTime(e.target.value);
+                          }}
+                          value={gameTime}
+                        />
+                        <button
+                          className="flex space-x-2 px-2 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
+                          style={{
+                            width: "18%",
+                            height: "50%",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                          onClick={() => {
+                            setPlaying((old) => !old);
+                          }}
+                        >
+                          {playing ? (
+                            <Pause className="mx-auto text-gray-50" />
+                          ) : (
+                            <Play className="mx-auto text-gray-50" />
+                          )}
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
                 <div

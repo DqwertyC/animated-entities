@@ -1,8 +1,17 @@
 import React from "react";
-import { fluid, portal } from "./Programs";
+import {
+  fluid,
+  heartMask,
+  impulseMask,
+  portal,
+  sawtoothMask,
+  sineMask,
+  squareMask,
+  VOID_COLORS,
+} from "./Programs";
+import { hsvToRgb, rgbToHsv } from "./ColorUtils";
 
-const ProgramPreview = ({ program, colors }) => {
-  const [time, setTime] = React.useState((Date.now() / 50) % 24000);
+const ProgramPreview = ({ program, colors, time }) => {
   const [id, setId] = React.useState(0);
   const [speed, setSpeed] = React.useState(0);
   const [primaryColor, setPrimaryColor] = React.useState({
@@ -21,14 +30,6 @@ const ProgramPreview = ({ program, colors }) => {
   const [boolB, setBoolB] = React.useState(false);
   const [crumb, setCrumb] = React.useState(0);
   const [nibble, setNibble] = React.useState(0);
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setTime((Date.now() / 50) % 24000);
-    }, 20); // 20 ms
-
-    return () => clearInterval(interval); // cleanup on unmount
-  }, []);
 
   const rgba2color = (rgba) => {
     return `rgb(${rgba.r},${rgba.g},${rgba.b},${rgba.a / 255.0})`;
@@ -58,11 +59,11 @@ const ProgramPreview = ({ program, colors }) => {
           : { x: 1, y: 0 };
   }, [crumb]);
 
-  const interpolate = (primary, secondary, factor) => {
-    const r = (1 - factor) * primary.r + factor * secondary.r;
-    const g = (1 - factor) * primary.g + factor * secondary.g;
-    const b = (1 - factor) * primary.b + factor * secondary.b;
-    const a = (1 - factor) * primary.a + factor * secondary.a;
+  const interpolate = (primary, secondary, mixPercent) => {
+    const r = (1 - mixPercent) * primary.r + mixPercent * secondary.r;
+    const g = (1 - mixPercent) * primary.g + mixPercent * secondary.g;
+    const b = (1 - mixPercent) * primary.b + mixPercent * secondary.b;
+    const a = (1 - mixPercent) * primary.a + mixPercent * secondary.a;
     return { r, g, b, a };
   };
 
@@ -70,38 +71,115 @@ const ProgramPreview = ({ program, colors }) => {
     (ctx) => {
       for (let x = 0; x < 192; x++) {
         for (let y = 0; y < 192; y++) {
-          let factor = 0.0;
+          let mixPercent = 0.0;
 
           let primary = primaryColor;
           let secondary = secondaryColor;
           const pos = { x: x / 192, y: y / 192 };
 
           if (id === 1) {
-            if (!boolA) {
-              primary = { r: 0, g: 0, b: 0, a: 255 };
+            // End Portal
+            primary = boolA ? primaryColor : VOID_COLORS[0];
+            let particleColor = boolA ? primaryColor : VOID_COLORS[0];
+
+            let hasParticle = false;
+
+            for (let i = 0; i < nibble + 1; i++) {
+              const layerColor = boolB ? secondaryColor : VOID_COLORS[i];
+
+              const scale = {
+                x: 384 / (i + 1),
+                y: 384 / (i + 1),
+              };
+
+              const angle = i * i * 72 + i * 0.2;
+              const newPos = {
+                x: pos.x * Math.cos(angle) - pos.y * Math.sin(angle),
+                y: pos.y * Math.cos(angle) + pos.x * Math.sin(angle),
+              };
+
+              let layerPercent = portal(newPos, scale, time);
+
+              if (layerPercent > 0) {
+                hasParticle = true;
+                particleColor = {
+                  r: particleColor.r + layerPercent * layerColor.r,
+                  g: particleColor.g + layerPercent * layerColor.g,
+                  b: particleColor.b + layerPercent * layerColor.b,
+                  a: 255,
+                };
+              }
             }
 
-            if (!boolB) {
-              secondary = { r: 52, g: 100, b: 77, a: 255 };
-            }
-
-            factor = portal(pos, {x:16, y:16}, speed, time);
+            secondary = hasParticle ? particleColor : primary;
+            mixPercent = 1.0;
           } else if (id === 2) {
-            factor = fluid(
-              pos,
-              {
-                x: boolA ? 32 : 16,
-                y: boolA ? 32 : 16,
-              },
-              dir,
-              nibble,
+            // Fluid
+            const scale = {
+              x: boolA ? 32 : 16,
+              y: boolA ? 32 : 16,
+            };
+            mixPercent = fluid(pos, scale, dir, nibble, boolB, speed, time);
+          } else if (id === 3) {
+            // Hue Shift
+            const t = (boolA ? -1 : 1) * speed * time;
+            let { h, s, v } = rgbToHsv(primaryColor);
+            h = (h + t) % 360;
+            secondary = { ...hsvToRgb({ h, s, v }), a: primary.a };
+            mixPercent = 1.0;
+          } else if (id === 4) {
+            // Impulse Mask
+            mixPercent = impulseMask(
+              boolA,
               boolB,
+              crumb,
+              nibble,
+              speed,
+              time,
+            );
+          } else if (id === 5) {
+            // Square Mask
+            mixPercent = squareMask(
+              boolA,
+              boolB,
+              crumb,
+              nibble,
+              speed,
+              time,
+            );
+          } else if (id === 6) {
+            // Sine Mask
+            mixPercent = sineMask(
+              boolA,
+              boolB,
+              crumb,
+              nibble,
+              speed,
+              time,
+            );
+          } else if (id === 7) {
+            // Sawtooth Mask
+            mixPercent = sawtoothMask(
+              boolA,
+              boolB,
+              crumb,
+              nibble,
+              speed,
+              time,
+            );
+          } else if (id === 8) {
+            // Heartbeat Mask
+            mixPercent = heartMask(
+              boolA,
+              boolB,
+              crumb,
+              nibble,
               speed,
               time,
             );
           }
 
-          const result = interpolate(primary, secondary, factor);
+          const result = interpolate(primary, secondary, mixPercent);
 
           ctx.fillStyle = rgba2color(result);
           ctx.fillRect(x, y, 1, 1);
