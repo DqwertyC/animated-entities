@@ -1,5 +1,11 @@
 import { ImageIcon, Copy, Download, Eye, EyeClosed } from "lucide-react";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { PNG } from "pngjs/browser";
 import { Colorful } from "@uiw/react-color";
 import { toast, Toaster } from "react-hot-toast";
@@ -7,6 +13,7 @@ import TextureHelper from "./TextureRegions";
 import TexturePixel from "./TexturePixel";
 import ProgramPixel from "./ProgramPixel";
 import PalettePixel from "./PalettePixel";
+import ProgramPreview from "./ProgramPreview";
 
 const programInfo = [
   {
@@ -119,7 +126,7 @@ export default function App() {
   const [inputHeight, setInputHeight] = useState(0);
   const [inputWidth, setInputWidth] = useState(0);
   const [textureConfirmed, setTextureConfirmed] = useState(false);
-  const [textureType, setTextureType] = useState("humanoid");
+  const [textureType, setTextureType] = useState("unknown");
   const hiddenFileInput = useRef(null);
 
   const [texturePixels, setTexturePixels] = useState([]);
@@ -128,6 +135,7 @@ export default function App() {
 
   const [selectedProgram, setSelectedProgram] = useState(0);
   const [selectedPalette, setSelectedPalette] = useState(-1);
+  const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const [programVisible, setProgramVisible] = useState(true);
 
   const [showEditor, setShowEditor] = useState(false);
@@ -148,7 +156,9 @@ export default function App() {
   const [editorPickerPrimary, setEditorPickerPrimary] = useState(false);
 
   const [showPicker, setShowPicker] = useState(false);
-  const [pickerColor, setPickerColor] = useState("#00FF8888");
+  const [pickerColor, setPickerColor] = useState("#FFFFFFFF");
+
+  const [mouseDown, setMouseDown] = useState(false);
 
   const handleClick = () => hiddenFileInput.current.click();
 
@@ -239,9 +249,13 @@ export default function App() {
             color: { r, g, b, a },
           };
         } else if (TextureHelper.IsPaletteRegion(x, y, textureType)) {
-          palette[TextureHelper.CoordToPalette(x, y, textureType)] = {
+          let paletteIndex = TextureHelper.CoordToPalette(x, y, textureType);
+          palette[paletteIndex] = {
             color: { r, g, b, a },
           };
+          if (paletteIndex === 1) {
+            setPickerColor(rgbaToHexa({ r, g, b, a }));
+          }
         } else if (TextureHelper.IsDataRegion(x, y, textureType)) {
           [r, g, b, a] = [
             68,
@@ -283,6 +297,17 @@ export default function App() {
     [selectedProgram],
   );
 
+  const clickPixel = useCallback(
+    (index) => {
+      setMouseDown(true);
+      document.addEventListener("mouseup", () => {
+        setMouseDown(false);
+      });
+      paintPixel(index);
+    },
+    [paintPixel],
+  );
+
   const selectProgram = useCallback(
     (index) => {
       setSelectedProgram(index);
@@ -295,13 +320,14 @@ export default function App() {
       setSelectedPalette(index);
       const oldColor = palettePixels[index].color;
       setPickerColor(rgbaToHexa(oldColor));
-      setShowPicker(true);
+      setColorPickerVisible(true);
     },
     [setSelectedPalette, palettePixels],
   );
 
   const closeColorPicker = useCallback(() => {
     const newColor = hexToRgba(pickerColor);
+
     setPalettePixels((oldPalette) => {
       const newPalette = [...oldPalette];
       newPalette[selectedPalette].color = newColor;
@@ -316,8 +342,9 @@ export default function App() {
       return newTexture;
     });
 
-    setShowPicker(false);
-  }, [pickerColor, selectedPalette, setShowPicker, textureType]);
+    setSelectedPalette(-1);
+    setColorPickerVisible(false);
+  }, [pickerColor, selectedPalette, textureType]);
 
   const openEditorPicker = useCallback((isPrimary) => {
     setEditorPickerPrimary(isPrimary);
@@ -465,10 +492,16 @@ export default function App() {
     }
   }, [getImageBlob]);
 
+  const previewColor = useMemo(() => {
+    return showEditor
+      ? hexToRgba(editorResult)
+      : (programPixels[selectedProgram]?.color ?? { r: 0, g: 0, b: 0, a: 255 });
+  }, [showEditor, editorResult, programPixels, selectedProgram]);
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-8">
       <Toaster position="top-center" />
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-2">Animated Texture Editor</h1>
           <p className="text-xl text-gray-400">
@@ -478,6 +511,9 @@ export default function App() {
             Requires the Animated Entity shader. <br />
             Currently supports Humanoids, Cows, Pigs, and Chickens.
           </p>
+          {textureType}
+          <br />
+          {mouseDown ? "down" : "up"}
         </header>
 
         {textureConfirmed ? (
@@ -486,6 +522,151 @@ export default function App() {
             style={{ alignItems: "center", justifyContent: "center" }}
           >
             <div className="flex flex-row">
+              <div
+                className="flex flex-col"
+                style={{ justifyContent: "space-between" }}
+              >
+                <div
+                  className="bg-gray-500 rounded-lg p-2 shadow-xl"
+                  style={{ height: "256px", width: "210px" }}
+                >
+                  {colorPickerVisible ? (
+                    <>
+                      <Colorful
+                        color={pickerColor}
+                        onChange={(color) => {
+                          setPickerColor(color.hexa);
+                        }}
+                        style={{ width: "100%" }}
+                      />
+                      <div className="flex flex-row" style={{ width: "100%" }}>
+                        <input
+                          className="px-3 py-2 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          style={{ width: "80%" }}
+                          type="text"
+                          value={pickerColor}
+                          onChange={(e) => {
+                            setPickerColor(e.target.value);
+                          }}
+                        />
+                        <button
+                          className="flex space-x-2 px-2 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
+                          style={{
+                            width: "20%",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                          onClick={() => {
+                            closeColorPicker();
+                          }}
+                        >
+                          OK
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xl text-gray-100 text-center">
+                        Program Colors
+                      </div>
+                      <div style={{ height: "8px" }} />
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateRows: "repeat(8, 24px)",
+                          gridTemplateColumns: "repeat(8, 24px)",
+                          width: "192px",
+                          height: "192px",
+                          gap: 0,
+
+                          backgroundImage:
+                            "linear-gradient(30deg, #808080 25%, transparent 25%), linear-gradient(-30deg, #808080 25%, transparent 25%), linear-gradient(30deg, transparent 75%, #808080 75%), linear-gradient(-30deg, transparent 75%, #808080 75%)",
+                          backgroundSize: "20px 20px",
+                          backgroundPosition:
+                            "0 0, 0 10px, 10px -10px, -10px 0px",
+                        }}
+                      >
+                        {palettePixels &&
+                          palettePixels.map((value, index) => (
+                            <PalettePixel
+                              rgba={value.color}
+                              onClick={() => {
+                                openColorPicker(index);
+                              }}
+                              highlight={index === selectedPalette}
+                            />
+                          ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div
+                  className="bg-gray-500 rounded-lg p-2 shadow-xl"
+                  style={{ height: "256px", width: "210px" }}
+                >
+                  <div
+                    className="flex flex-col text-center align"
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <div className="text-sm text-justify">
+                      Above is the Color Palette, which controls the colors
+                      available to all animation programs. Click a pixel above
+                      to edit its color. <br />
+                      The upper-left pixel is reserved to tell the shader to use
+                      the base texture color instead of a palette color.
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <button
+                    className="flex bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
+                    style={{
+                      width: "45%",
+                      height: "100%",
+                      display: "flex",
+                      alignContent: "center",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={() => {
+                      console.log("button a");
+                    }}
+                  >
+                    <Eye className="mx-auto text-gray-50" />
+                  </button>
+
+                  <button
+                    className="flex bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
+                    style={{
+                      width: "45%",
+                      height: "100%",
+                      display: "flex",
+                      alignContent: "center",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={() => {
+                      console.log("button b");
+                    }}
+                  >
+                    <Eye className="mx-auto text-gray-50" />
+                  </button>
+                </div>
+              </div>
+              <div style={{ width: "32px" }} />
               <div
                 className="bg-gray-500 rounded-lg p-8 shadow-xl aspect-1"
                 style={{
@@ -507,7 +688,12 @@ export default function App() {
                     programs={programPixels}
                     editable={value.editable}
                     onClick={() => {
-                      paintPixel(index);
+                      clickPixel(index);
+                    }}
+                    onHover={() => {
+                      if (mouseDown) {
+                        paintPixel(index);
+                      }
                     }}
                   />
                 ))}
@@ -988,7 +1174,7 @@ export default function App() {
                               if (index > 0) openEditor(index);
                             }}
                             highlight={index === selectedProgram}
-                            programVisible={true}
+                            programVisible={programVisible}
                           />
                         ))}
                       </div>
@@ -1001,78 +1187,22 @@ export default function App() {
                   style={{ height: "256px", width: "210px" }}
                 >
                   <div style={{ height: "8px" }} />
-                  {showPicker ? (
-                    <div
-                      className="flex flex-col text-center align"
-                      style={{
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "100%",
-                      }}
-                    >
-                      <Colorful
-                        color={pickerColor}
-                        onChange={(color) => setPickerColor(color.hexa)}
-                        style={{ width: "100%" }}
-                      />
-                      <div className="flex flex-row" style={{ width: "100%" }}>
-                        <input
-                          className="px-3 py-2 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          style={{ width: "80%" }}
-                          type="text"
-                          value={pickerColor}
-                          onChange={(e) => {
-                            setPickerColor(e.target.value);
-                          }}
-                        />
-                        <button
-                          className="flex space-x-2 px-2 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
-                          style={{
-                            width: "20%",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                          onClick={() => {
-                            closeColorPicker();
-                          }}
-                        >
-                          OK
-                        </button>
-                      </div>
+                  {selectedProgram === 0 ? (
+                    <div className="text-sm text-justify">
+                      Click a pixel above to select its program, then click on
+                      the texture to edit which programs are applied to each
+                      pixel. <br />
+                      Double click a pixel above to edit its program. <br />
+                      Use the upper-left pixel to clear programs from the
+                      texture.
                     </div>
                   ) : (
-                    <>
-                      <div className="text-xl text-gray-100 text-center">
-                        Program Colors
-                      </div>
-                      <div style={{ height: "8px" }} />
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateRows: "repeat(8, 24px)",
-                          gridTemplateColumns: "repeat(8, 24px)",
-                          width: "192px",
-                          height: "192px",
-                          gap: 0,
-
-                          backgroundImage:
-                            "linear-gradient(30deg, #808080 25%, transparent 25%), linear-gradient(-30deg, #808080 25%, transparent 25%), linear-gradient(30deg, transparent 75%, #808080 75%), linear-gradient(-30deg, transparent 75%, #808080 75%)",
-                          backgroundSize: "20px 20px",
-                          backgroundPosition:
-                            "0 0, 0 10px, 10px -10px, -10px 0px",
-                        }}
-                      >
-                        {palettePixels &&
-                          palettePixels.map((value, index) => (
-                            <PalettePixel
-                              rgba={value.color}
-                              onClick={() => {
-                                if (index > 0) openColorPicker(index);
-                              }}
-                            />
-                          ))}
-                      </div>
-                    </>
+                    <div style={{ width: "64px", height: "64px" }}>
+                      <ProgramPreview
+                        program={previewColor}
+                        colors={palettePixels}
+                      />
+                    </div>
                   )}
                 </div>
                 <div
@@ -1104,29 +1234,6 @@ export default function App() {
                       <EyeClosed className="mx-auto text-gray-50" />
                     )}
                   </button>
-
-                  {false ? (
-                    <>
-                      <button
-                        className="flex bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
-                        style={{
-                          width: "30%",
-                          height: "100%",
-                          display: "flex",
-                          alignContent: "center",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                        onClick={() => {
-                          copyFile();
-                        }}
-                      >
-                        <Copy className="mx-auto text-gray-50" />
-                      </button>
-                    </>
-                  ) : (
-                    <></>
-                  )}
 
                   <button
                     className="flex bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"

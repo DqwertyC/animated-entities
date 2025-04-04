@@ -5,11 +5,10 @@
   "private": true,
   "dependencies": {
     "@testing-library/react": "^13.4.0",
-    "@uiw/react-color": "^2.4.5",
+    "@uiw/react-color": "^2.4.4",
     "lucide-react": "^0.460.0",
     "pngjs": "^7.0.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2"
   },
   "scripts": {

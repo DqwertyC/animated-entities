@@ -1,7 +1,7 @@
 const IsDataRegion = (x, y, textureType) => {
   if (textureType === "chicken") return x >= 0 && x <= 2 && y >= 0 && y <= 2;
 
-  if (textureType === "quadruped") return x >= 0 && x <= 7 && y >= 0 && y <= 7;
+  if (textureType === "quadruped") return x >= 0 && x <= 5 && y >= 0 && y <= 5;
 
   if (textureType === "humanoid") return x >= 0 && x <= 7 && y >= 0 && y <= 7;
 
@@ -9,15 +9,9 @@ const IsDataRegion = (x, y, textureType) => {
 };
 
 const IsDataMask = (x, y, textureType) => {
-  if (textureType === "chicken") return x === 1 && y === 1;
+  let max = (textureType === "chicken") ? 2 : (textureType === "quadruped") ? 5 : 7;
 
-  return (
-    (x >= 1 && x <= 2 && y >= 1 && y <= 2) ||
-    (x >= 5 && x <= 6 && y >= 1 && y <= 2) ||
-    (x >= 3 && x <= 4 && y >= 3 && y <= 5) ||
-    (x === 2 && y >= 4 && y <= 6) ||
-    (x === 5 && y >= 4 && y <= 6)
-  );
+  return (x !== 0 && y !== 0 && x !== max && y !== max);
 };
 
 const IsProgramRegion = (x, y, textureType) => {
