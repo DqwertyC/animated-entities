@@ -653,7 +653,7 @@ export default function App() {
                     justifyContent: "space-between",
                   }}
                 >
-                  <button
+                  <a
                     className="flex bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
                     style={{
                       width: "45%",
@@ -667,7 +667,7 @@ export default function App() {
                     target="_blank"
                   >
                     <Github className="mx-auto text-gray-50" />
-                  </button>
+                  </a>
 
                   <a
                     className="flex bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center"
