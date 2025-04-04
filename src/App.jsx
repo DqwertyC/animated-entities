@@ -7,6 +7,8 @@ import {
   Play,
   Youtube,
   Github,
+  Check,
+  X,
 } from "lucide-react";
 import React, {
   useEffect,
@@ -163,7 +165,6 @@ export default function App() {
   const [showEditorPicker, setShowEditorPicker] = useState(false);
   const [editorPickerPrimary, setEditorPickerPrimary] = useState(false);
 
-  const [showPicker, setShowPicker] = useState(false);
   const [pickerColor, setPickerColor] = useState("#FFFFFFFF");
 
   const [mouseDown, setMouseDown] = useState(false);
@@ -495,26 +496,12 @@ export default function App() {
     URL.revokeObjectURL(url);
   }, [getImageBlob]);
 
-  const copyFile = useCallback(() => {
-    const blob = getImageBlob();
-
-    try {
-      navigator.clipboard.write([
-        new ClipboardItem({
-          "image/png": blob,
-        }),
-      ]);
-
-      toast.success("Image Copied to Clipboard!");
-    } catch (error) {
-      console.error(error);
-    }
-  }, [getImageBlob]);
-
   const previewColor = useMemo(() => {
-    return showEditor
-      ? hexToRgba(editorResult)
-      : (programPixels[selectedProgram]?.color ?? { r: 0, g: 0, b: 0, a: 255 });
+    if (showEditor) return hexToRgba(editorResult);
+    if (programPixels[selectedProgram])
+      return programPixels[selectedProgram].color;
+
+    return { r: 0, g: 0, b: 0, a: 255 };
   }, [showEditor, editorResult, programPixels, selectedProgram]);
 
   return (
@@ -665,6 +652,7 @@ export default function App() {
                     }}
                     href="https://github.com/DqwertyC/animated-entities"
                     target="_blank"
+                    rel="noreferrer"
                   >
                     <Github className="mx-auto text-gray-50" />
                   </a>
@@ -680,6 +668,7 @@ export default function App() {
                       justifyContent: "center",
                     }}
                     href="https://www.youtube.com/@DqwertyC"
+                    rel="noreferrer"
                     target="_blank"
                   >
                     <Youtube className="mx-auto text-gray-50" />
@@ -876,6 +865,13 @@ export default function App() {
                             style={{
                               width: "20%",
                               height: "24px",
+                              backgroundImage:
+                                editorColorA === 0
+                                  ? "linear-gradient(30deg, #808080 25%, transparent 25%), linear-gradient(-30deg, #808080 25%, transparent 25%), linear-gradient(30deg, transparent 75%, #808080 75%), linear-gradient(-30deg, transparent 75%, #808080 75%)"
+                                  : "",
+                              backgroundSize: "20px 20px",
+                              backgroundPosition:
+                                "0 0, 0 10px, 10px -10px, -10px 0px",
                               backgroundColor: rgbaToColor(
                                 palettePixels[editorColorA].color,
                               ),
@@ -902,6 +898,13 @@ export default function App() {
                                 style={{
                                   width: "20%",
                                   height: "24px",
+                                  backgroundImage:
+                                    editorColorB === 0
+                                      ? "linear-gradient(30deg, #808080 25%, transparent 25%), linear-gradient(-30deg, #808080 25%, transparent 25%), linear-gradient(30deg, transparent 75%, #808080 75%), linear-gradient(-30deg, transparent 75%, #808080 75%)"
+                                      : "",
+                                  backgroundSize: "20px 20px",
+                                  backgroundPosition:
+                                    "0 0, 0 10px, 10px -10px, -10px 0px",
                                   backgroundColor: rgbaToColor(
                                     palettePixels[editorColorB].color,
                                   ),
@@ -926,20 +929,22 @@ export default function App() {
                             Glow A:
                           </div>
                           <div
-                            className="px-2 py-2 rounded-md"
+                            className="flex rounded-md"
                             style={{
                               width: "20%",
                               height: "24px",
-                              backgroundColor: editorEmissiveA
-                                ? "white"
-                                : "black",
+                              backgroundColor: "black",
                               borderColor: "white",
                               borderWidth: "2px",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                             onClick={() => {
                               setEditorEmissiveA((old) => !old);
                             }}
-                          />
+                          >
+                            {editorEmissiveA ? <Check /> : <X />}
+                          </div>
                           {!programInfo[editorProgramType].hasColorB ? (
                             <></>
                           ) : (
@@ -951,20 +956,22 @@ export default function App() {
                                 Glow B:
                               </div>
                               <div
-                                className="px-2 py-2 rounded-md"
+                                className="flex rounded-md"
                                 style={{
                                   width: "20%",
                                   height: "24px",
-                                  backgroundColor: editorEmissiveB
-                                    ? "white"
-                                    : "black",
+                                  backgroundColor: "black",
                                   borderColor: "white",
                                   borderWidth: "2px",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                 }}
                                 onClick={() => {
                                   setEditorEmissiveB((old) => !old);
                                 }}
-                              />
+                              >
+                                {editorEmissiveB ? <Check /> : <X />}
+                              </div>
                             </>
                           )}
                         </div>
@@ -987,20 +994,22 @@ export default function App() {
                                 {programInfo[editorProgramType].boolNameA}
                               </div>
                               <div
-                                className="px-2 py-2 rounded-md"
+                                className="flex rounded-md"
                                 style={{
                                   width: "20%",
                                   height: "24px",
-                                  backgroundColor: editorBoolA
-                                    ? "white"
-                                    : "black",
+                                  backgroundColor: "black",
                                   borderColor: "white",
                                   borderWidth: "2px",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                 }}
                                 onClick={() => {
                                   setEditorBoolA((old) => !old);
                                 }}
-                              />
+                              >
+                                {editorBoolA ? <Check /> : <X />}
+                              </div>
                             </>
                           )}
                           {programInfo[editorProgramType].boolNameB === "-" ? (
@@ -1014,20 +1023,22 @@ export default function App() {
                                 {programInfo[editorProgramType].boolNameB}
                               </div>
                               <div
-                                className="px-2 py-2 rounded-md"
+                                className="flex rounded-md"
                                 style={{
                                   width: "20%",
                                   height: "24px",
-                                  backgroundColor: editorBoolB
-                                    ? "white"
-                                    : "black",
+                                  backgroundColor: "black",
                                   borderColor: "white",
                                   borderWidth: "2px",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                 }}
                                 onClick={() => {
                                   setEditorBoolB((old) => !old);
                                 }}
-                              />
+                              >
+                                {editorBoolB ? <Check /> : <X />}
+                              </div>
                             </>
                           )}
                         </div>

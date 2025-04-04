@@ -9,7 +9,7 @@ import {
   squareMask,
   VOID_COLORS,
 } from "./Programs";
-import { hsvToRgb, rgbToHsv } from "./ColorUtils";
+import { hsvToRgb, rgbToHsv, rgbaToColor } from "./ColorUtils";
 
 const ProgramPreview = ({ program, colors, time }) => {
   const [id, setId] = React.useState(0);
@@ -31,17 +31,17 @@ const ProgramPreview = ({ program, colors, time }) => {
   const [crumb, setCrumb] = React.useState(0);
   const [nibble, setNibble] = React.useState(0);
 
-  const rgba2color = (rgba) => {
-    return `rgb(${rgba.r},${rgba.g},${rgba.b},${rgba.a / 255.0})`;
-  };
-
   const canvasRef = React.useRef(null);
 
   React.useEffect(() => {
     setId(program.b >> 4);
     setSpeed(program.b & 7);
-    setPrimaryColor(colors[program.r & 63].color);
-    setSecondaryColor(colors[program.g & 63].color);
+    setPrimaryColor(
+      colors[program.r & 63].color ?? { r: 0, g: 0, b: 0, a: 255 },
+    );
+    setSecondaryColor(
+      colors[program.g & 63].color ?? { r: 0, g: 0, b: 0, a: 255 },
+    );
 
     setBoolA((program.a & 128) > 0);
     setBoolB((program.a & 64) > 0);
@@ -69,6 +69,9 @@ const ProgramPreview = ({ program, colors, time }) => {
 
   const draw = React.useCallback(
     (ctx) => {
+      ctx.fillStyle = rgbaToColor({r:0, g:0, b:0, a:255});
+      ctx.fillRect(0, 0, 192, 192);
+
       for (let x = 0; x < 192; x++) {
         for (let y = 0; y < 192; y++) {
           let mixPercent = 0.0;
@@ -77,7 +80,8 @@ const ProgramPreview = ({ program, colors, time }) => {
           let secondary = secondaryColor;
           const pos = { x: x / 192, y: y / 192 };
 
-          if (id === 1) {
+          if (id === 0) {
+          } else if (id === 1) {
             // End Portal
             primary = boolA ? primaryColor : VOID_COLORS[0];
             let particleColor = boolA ? primaryColor : VOID_COLORS[0];
@@ -129,64 +133,40 @@ const ProgramPreview = ({ program, colors, time }) => {
             mixPercent = 1.0;
           } else if (id === 4) {
             // Impulse Mask
-            mixPercent = impulseMask(
-              boolA,
-              boolB,
-              crumb,
-              nibble,
-              speed,
-              time,
-            );
+            mixPercent = impulseMask(boolA, boolB, crumb, nibble, speed, time);
           } else if (id === 5) {
             // Square Mask
-            mixPercent = squareMask(
-              boolA,
-              boolB,
-              crumb,
-              nibble,
-              speed,
-              time,
-            );
+            mixPercent = squareMask(boolA, boolB, crumb, nibble, speed, time);
           } else if (id === 6) {
             // Sine Mask
-            mixPercent = sineMask(
-              boolA,
-              boolB,
-              crumb,
-              nibble,
-              speed,
-              time,
-            );
+            mixPercent = sineMask(boolA, boolB, crumb, nibble, speed, time);
           } else if (id === 7) {
             // Sawtooth Mask
-            mixPercent = sawtoothMask(
-              boolA,
-              boolB,
-              crumb,
-              nibble,
-              speed,
-              time,
-            );
+            mixPercent = sawtoothMask(boolA, boolB, crumb, nibble, speed, time);
           } else if (id === 8) {
             // Heartbeat Mask
-            mixPercent = heartMask(
-              boolA,
-              boolB,
-              crumb,
-              nibble,
-              speed,
-              time,
-            );
+            mixPercent = heartMask(boolA, boolB, crumb, nibble, speed, time);
           }
 
           const result = interpolate(primary, secondary, mixPercent);
 
-          ctx.fillStyle = rgba2color(result);
+          ctx.fillStyle = rgbaToColor(result);
           ctx.fillRect(x, y, 1, 1);
         }
       }
     },
-    [time, id, boolA, boolB, nibble, primaryColor, secondaryColor, speed, dir],
+    [
+      time,
+      id,
+      boolA,
+      boolB,
+      crumb,
+      nibble,
+      primaryColor,
+      secondaryColor,
+      speed,
+      dir,
+    ],
   );
 
   React.useEffect(() => {
