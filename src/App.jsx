@@ -24,6 +24,7 @@ import ProgramPixel from "./ProgramPixel";
 import PalettePixel from "./PalettePixel";
 import ProgramPreview from "./ProgramPreview";
 import { rgbaToHexa, rgbaToColor } from "./ColorUtils";
+import resourcePack from "./res/EntityAnimationRP.zip";
 
 const programInfo = [
   {
@@ -526,7 +527,13 @@ export default function App() {
             Create animations for entity textures in Minecraft.
           </p>
           <p className="text-xl text-gray-400">
-            Requires the Animated Entity shader. <br />
+            Requires the{" "}
+            <u>
+              <a href={resourcePack} download="EntityAnimationRP.zip">
+                Animated Entity Shader
+              </a>
+            </u>
+            . <br />
             Currently supports Humanoids, Cows, Pigs, and Chickens.
           </p>
         </header>
