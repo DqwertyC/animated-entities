@@ -68,8 +68,8 @@ const programInfo = [
   {
     programName: "Impulse",
     boolNameA: "Invert:",
-    boolNameB: "Smooth:",
-    crumbName: "Delay:",
+    boolNameB: "Mix:",
+    crumbName: "Pause:",
     crumbIsDir: false,
     nibbleName: "Offset:",
     hasColorB: true,
@@ -78,16 +78,16 @@ const programInfo = [
     programName: "Square Wave",
     boolNameA: "Invert:",
     boolNameB: "Mix",
-    crumbName: "Delay:",
+    crumbName: "Pause:",
     crumbIsDir: false,
     nibbleName: "Offset:",
     hasColorB: true,
   },
   {
-    programName: "Sin Wave",
+    programName: "Sine Wave",
     boolNameA: "Invert:",
     boolNameB: "Mix",
-    crumbName: "Delay:",
+    crumbName: "Pause:",
     crumbIsDir: false,
     nibbleName: "Offset:",
     hasColorB: true,
@@ -96,7 +96,7 @@ const programInfo = [
     programName: "Sawtooth Wave",
     boolNameA: "Invert:",
     boolNameB: "Mix",
-    crumbName: "Delay:",
+    crumbName: "Pause:",
     crumbIsDir: false,
     nibbleName: "Offset:",
     hasColorB: true,
@@ -105,7 +105,7 @@ const programInfo = [
     programName: "Heartbeat",
     boolNameA: "Invert:",
     boolNameB: "Mix",
-    crumbName: "Delay:",
+    crumbName: "Pause:",
     crumbIsDir: false,
     nibbleName: "Offset:",
     hasColorB: true,
@@ -962,7 +962,7 @@ export default function App() {
                             onChange={(e) => setEditorSpeed(e.target.value)}
                           >
                             <option className="text-sm px-1" value={0}>
-                              Frozen
+                              Extremely Slow
                             </option>
                             <option className="text-sm px-1" value={1}>
                               Very Slow
@@ -971,13 +971,13 @@ export default function App() {
                               Slow
                             </option>
                             <option className="text-sm px-1" value={3}>
-                              Slightly Slow
+                              Kind of Slow
                             </option>
                             <option className="text-sm px-1" value={4}>
                               Normal
                             </option>
                             <option className="text-sm px-1" value={5}>
-                              Slightly Fast
+                              Kind of Fast
                             </option>
                             <option className="text-sm px-1" value={6}>
                               Fast

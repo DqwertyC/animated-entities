@@ -129,83 +129,30 @@ export const fluid = (pos, size, dir, density, hasTail, speed, time) => {
   return offsetA * newValue + (1.0 - offsetA) * oldValue;
 };
 
-export const impulseMask = (invert, fade, delay, offset, speed, time) => {
-  const progress = (speed * time) / 20;
-
-  const maxSequence = (delay + 1) * 16;
-  const sequence_0 = Math.floor(progress % maxSequence);
-
-  const val_0 = (sequence_0 === offset) !== invert ? 1.0 : 0.0;
-
-  if (!fade) {
-    return val_0;
-  }
-
-  const next = Math.floor((sequence_0 + 1) % maxSequence);
-  const val_1 = (next === offset) !== invert ? 1.0 : 0.0;
-
-  const delta = progress - Math.floor(progress);
-  return delta * val_1 + (1 - delta) * val_0;
+export const impulseMask = (progress) => {
+  return (progress <= (1 / 16.0)) ? 1.0 : 0.0;
 };
 
-export const sineMask = (invert, fade, delay, offset, speed, time) => {
-  const maxAngle = 2 * Math.PI * (delay + 1);
-  const progress = (speed * time) / 20;
-  const angle = (progress - (2 * Math.PI * offset) / 16.0) % maxAngle;
+export const sineMask = (progress) => {
+  if (progress >= 1.0) return 0.0;
 
-  if (angle > 2 * Math.PI) {
-    return invert ? 1.0 : 0.0;
-  }
-
-  const val = 0.5 - 0.5 * Math.cos(angle);
-  return invert ? 1.0 - val : val;
+  return 0.5 - 0.5 * Math.cos(2 * Math.PI * progress);
 };
 
-export const squareMask = (invert, fade, delay, offset, speed, time) => {
-  const maxAngle = 2 * Math.PI * (delay + 1);
-  const progress = (speed * time) / 20;
-  const angle = (progress - (2 * Math.PI * offset) / 16.0) % maxAngle;
-
-  if (angle > 2 * Math.PI) {
-    return invert ? 1.0 : 0.0;
-  }
-
-  const val = angle <= Math.PI ? 1.0 : 0.0;
-  return invert ? 1.0 - val : val;
+export const squareMask = (progress) => {
+  return (progress <= (1 / 2.0)) ? 1.0 : 0.0;
 };
 
-export const sawtoothMask = (invertX, invertY, delay, offset, speed, time) => {
-  const maxAngle = 2 * Math.PI * (delay + 1);
-  const progress = (speed * time) / 20;
-  let angle = (progress - (2 * Math.PI * offset) / 16.0) % maxAngle;
+export const sawtoothMask = (progress) => {
+  if (progress >= 1.0) return 0.0;
 
-  if (angle > 2 * Math.PI) {
-    return invertY ? 1.0 : 0.0;
-  }
-
-  angle = invertX ? 2 * Math.PI - angle : angle;
-  const val = angle / (2 * Math.PI);
-  return invertY ? 1.0 - val : val;
+  return 1.0 - progress;
 };
 
-export const heartMask = (invertX, invertY, delay, offset, speed, time) => {
-  const maxAngle = 2 * Math.PI * (delay + 1);
-  const progress = (speed * time) / 20;
-  let angle = (progress - (2 * Math.PI * offset) / 16.0) % maxAngle;
+export const heartMask = (progress) => {
+  if (progress >= 0.6) return 0.0;
 
-  if (angle > 2 * Math.PI) {
-    return invertY ? 1.0 : 0.0;
-  }
+  if (progress >= 0.1) return 1.2 - (2*progress);
 
-  angle = invertX ? 2 * Math.PI - angle : angle;
-  let val = 0;
-
-  if (angle < Math.PI / 4) {
-    val = 1.0 - angle / (Math.PI / 2);
-  } else {
-    angle -= Math.PI / 4;
-    val = 1.0 - angle / ((7 * Math.PI) / 4);
-  }
-
-  return invertY ? 1.0 - val : val;
+  return 1.0 - (4*progress);
 };

@@ -76,6 +76,11 @@ const ProgramPreview = ({ program, colors, time }) => {
       ctx.fillStyle = rgbaToColor({ r: 0, g: 0, b: 0, a: 255 });
       ctx.fillRect(0, 0, 192, 192);
 
+      const step = (8 - speed) * 20.0 / 16.0;
+      const cycleTicks = (8 - speed) * 20;
+      const maxTicks = (1 + crumb) * cycleTicks;
+      const progress = ((maxTicks + time - (step * nibble)) % maxTicks) / cycleTicks;
+
       for (let x = 0; x < 192; x++) {
         for (let y = 0; y < 192; y++) {
           let mixPercent = 0.0;
@@ -152,10 +157,19 @@ const ProgramPreview = ({ program, colors, time }) => {
             mixPercent = 1.0;
           } else if (id === 4) {
             // Impulse Mask
-            mixPercent = impulseMask(boolA, boolB, crumb, nibble, speed, time);
+            mixPercent = impulseMask(progress);
+            if (boolB) {
+              let opacity = secondary.a / 255.0;
+              secondary = {
+                r: (1 - opacity) * primary.r + opacity * secondary.r,
+                g: (1 - opacity) * primary.g + opacity * secondary.g,
+                b: (1 - opacity) * primary.b + opacity * secondary.b,
+                a: Math.max(primary.a, secondary.a),
+              };
+            }
           } else if (id === 5) {
             // Square Mask
-            mixPercent = squareMask(boolA, boolB, crumb, nibble, speed, time);
+            mixPercent = squareMask(progress);
             if (boolB) {
               let opacity = secondary.a / 255.0;
               secondary = {
@@ -167,7 +181,7 @@ const ProgramPreview = ({ program, colors, time }) => {
             }
           } else if (id === 6) {
             // Sine Mask
-            mixPercent = sineMask(boolA, boolB, crumb, nibble, speed, time);
+            mixPercent = sineMask(progress);
             if (boolB) {
               let opacity = secondary.a / 255.0;
               secondary = {
@@ -179,7 +193,7 @@ const ProgramPreview = ({ program, colors, time }) => {
             }
           } else if (id === 7) {
             // Sawtooth Mask
-            mixPercent = sawtoothMask(boolA, boolB, crumb, nibble, speed, time);
+            mixPercent = sawtoothMask(progress);
             if (boolB) {
               let opacity = secondary.a / 255.0;
               secondary = {
@@ -191,7 +205,7 @@ const ProgramPreview = ({ program, colors, time }) => {
             }
           } else if (id === 8) {
             // Heartbeat Mask
-            mixPercent = heartMask(boolA, boolB, crumb, nibble, speed, time);
+            mixPercent = heartMask(progress);
             if (boolB) {
               let opacity = secondary.a / 255.0;
               secondary = {
