@@ -30,6 +30,8 @@ const ProgramPreview = ({ program, colors, time }) => {
   const [boolB, setBoolB] = React.useState(false);
   const [crumb, setCrumb] = React.useState(0);
   const [nibble, setNibble] = React.useState(0);
+  const [overridePrimary, setOverridePrimary] = React.useState(false);
+  const [overrideSecondary, setOverrideSecondary] = React.useState(false);
 
   const canvasRef = React.useRef(null);
 
@@ -42,6 +44,8 @@ const ProgramPreview = ({ program, colors, time }) => {
     setSecondaryColor(
       colors[program.g & 63].color ?? { r: 0, g: 0, b: 0, a: 255 },
     );
+    setOverridePrimary((0 === program.r) & 63);
+    setOverrideSecondary((0 === program.g) & 63);
 
     setBoolA((program.a & 128) > 0);
     setBoolB((program.a & 64) > 0);
@@ -69,27 +73,42 @@ const ProgramPreview = ({ program, colors, time }) => {
 
   const draw = React.useCallback(
     (ctx) => {
-      ctx.fillStyle = rgbaToColor({r:0, g:0, b:0, a:255});
+      ctx.fillStyle = rgbaToColor({ r: 0, g: 0, b: 0, a: 255 });
       ctx.fillRect(0, 0, 192, 192);
 
       for (let x = 0; x < 192; x++) {
         for (let y = 0; y < 192; y++) {
           let mixPercent = 0.0;
 
-          let primary = primaryColor;
-          let secondary = secondaryColor;
+          let primary = { ...primaryColor };
+          let secondary = { ...secondaryColor };
+
+          if (overridePrimary) {
+            primary.a = 255;
+            primary.r = 15 * Math.floor(x / 12);
+            primary.g = 15 * Math.floor(y / 12);
+            primary.b = 128;
+          }
+
+          if (overrideSecondary) {
+            secondary.a = 255;
+            secondary.r = 15 * Math.floor(x / 12);
+            secondary.g = 15 * Math.floor(y / 12);
+            secondary.b = 128;
+          }
+
           const pos = { x: x / 192, y: y / 192 };
 
           if (id === 0) {
           } else if (id === 1) {
             // End Portal
-            primary = boolA ? primaryColor : VOID_COLORS[0];
-            let particleColor = boolA ? primaryColor : VOID_COLORS[0];
+            primary = boolA ? primary : VOID_COLORS[0];
+            let particleColor = boolA ? primary : VOID_COLORS[0];
 
             let hasParticle = false;
 
             for (let i = 0; i < nibble + 1; i++) {
-              const layerColor = boolB ? secondaryColor : VOID_COLORS[i];
+              const layerColor = boolB ? secondary : VOID_COLORS[i];
 
               const scale = {
                 x: 384 / (i + 1),
@@ -127,7 +146,7 @@ const ProgramPreview = ({ program, colors, time }) => {
           } else if (id === 3) {
             // Hue Shift
             const t = (boolA ? -1 : 1) * speed * time;
-            let { h, s, v } = rgbToHsv(primaryColor);
+            let { h, s, v } = rgbToHsv(primary);
             h = (h + t) % 360;
             secondary = { ...hsvToRgb({ h, s, v }), a: primary.a };
             mixPercent = 1.0;
@@ -137,15 +156,51 @@ const ProgramPreview = ({ program, colors, time }) => {
           } else if (id === 5) {
             // Square Mask
             mixPercent = squareMask(boolA, boolB, crumb, nibble, speed, time);
+            if (boolB) {
+              let opacity = secondary.a / 255.0;
+              secondary = {
+                r: (1 - opacity) * primary.r + opacity * secondary.r,
+                g: (1 - opacity) * primary.g + opacity * secondary.g,
+                b: (1 - opacity) * primary.b + opacity * secondary.b,
+                a: Math.max(primary.a, secondary.a),
+              };
+            }
           } else if (id === 6) {
             // Sine Mask
             mixPercent = sineMask(boolA, boolB, crumb, nibble, speed, time);
+            if (boolB) {
+              let opacity = secondary.a / 255.0;
+              secondary = {
+                r: (1 - opacity) * primary.r + opacity * secondary.r,
+                g: (1 - opacity) * primary.g + opacity * secondary.g,
+                b: (1 - opacity) * primary.b + opacity * secondary.b,
+                a: Math.max(primary.a, secondary.a),
+              };
+            }
           } else if (id === 7) {
             // Sawtooth Mask
             mixPercent = sawtoothMask(boolA, boolB, crumb, nibble, speed, time);
+            if (boolB) {
+              let opacity = secondary.a / 255.0;
+              secondary = {
+                r: (1 - opacity) * primary.r + opacity * secondary.r,
+                g: (1 - opacity) * primary.g + opacity * secondary.g,
+                b: (1 - opacity) * primary.b + opacity * secondary.b,
+                a: Math.max(primary.a, secondary.a),
+              };
+            }
           } else if (id === 8) {
             // Heartbeat Mask
             mixPercent = heartMask(boolA, boolB, crumb, nibble, speed, time);
+            if (boolB) {
+              let opacity = secondary.a / 255.0;
+              secondary = {
+                r: (1 - opacity) * primary.r + opacity * secondary.r,
+                g: (1 - opacity) * primary.g + opacity * secondary.g,
+                b: (1 - opacity) * primary.b + opacity * secondary.b,
+                a: Math.max(primary.a, secondary.a),
+              };
+            }
           }
 
           const result = interpolate(primary, secondary, mixPercent);
@@ -166,6 +221,7 @@ const ProgramPreview = ({ program, colors, time }) => {
       secondaryColor,
       speed,
       dir,
+      overridePrimary,
     ],
   );
 

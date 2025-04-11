@@ -77,7 +77,7 @@ const programInfo = [
   {
     programName: "Square Wave",
     boolNameA: "Invert:",
-    boolNameB: "-",
+    boolNameB: "Mix",
     crumbName: "Delay:",
     crumbIsDir: false,
     nibbleName: "Offset:",
@@ -86,7 +86,7 @@ const programInfo = [
   {
     programName: "Sin Wave",
     boolNameA: "Invert:",
-    boolNameB: "-",
+    boolNameB: "Mix",
     crumbName: "Delay:",
     crumbIsDir: false,
     nibbleName: "Offset:",
@@ -95,7 +95,7 @@ const programInfo = [
   {
     programName: "Sawtooth Wave",
     boolNameA: "Invert:",
-    boolNameB: "Reverse:",
+    boolNameB: "Mix",
     crumbName: "Delay:",
     crumbIsDir: false,
     nibbleName: "Offset:",
@@ -104,7 +104,7 @@ const programInfo = [
   {
     programName: "Heartbeat",
     boolNameA: "Invert:",
-    boolNameB: "Reverse:",
+    boolNameB: "Mix",
     crumbName: "Delay:",
     crumbIsDir: false,
     nibbleName: "Offset:",
@@ -126,6 +126,23 @@ const getFinalColor = ({ color, program }) => {
   newColor.r += ((program & 32) >> 4) + ((program & 4) >> 2);
   newColor.g += ((program & 16) >> 3) + ((program & 2) >> 1);
   newColor.b += ((program & 8) >> 2) + ((program & 1) >> 0);
+  return newColor;
+};
+
+const getBaseColor = ({ color }) => {
+  const newColor = { ...color };
+  newColor.r &= 252;
+  newColor.g &= 252;
+  newColor.b &= 252;
+  return newColor;
+};
+
+const getProgramColor = ({ program }) => {
+  const newColor = { r: 0, g: 0, b: 0, a: 0 };
+  newColor.r += ((program & 32) >> 4) + ((program & 4) >> 2);
+  newColor.g += ((program & 16) >> 3) + ((program & 2) >> 1);
+  newColor.b += ((program & 8) >> 2) + ((program & 1) >> 0);
+  newColor.a = program > 0 ? 255 : 0;
   return newColor;
 };
 
@@ -478,7 +495,28 @@ export default function App() {
     png.data = dataArray;
     var buffer = PNG.sync.write(png);
 
-    return new Blob([buffer]);
+    return new Blob([buffer], { type: "image/png" });
+  }, [inputHeight, inputWidth, texturePixels]);
+
+  const getMetaBlob = useCallback(() => {
+    const png = new PNG({
+      width: inputWidth,
+      height: inputHeight,
+    });
+    const dataArray = new Uint8Array(inputWidth * inputHeight * 4);
+
+    for (let i = 0; i < texturePixels.length; i++) {
+      const finalColor = getProgramColor(texturePixels[i]);
+      dataArray[4 * i + 0] = finalColor.r;
+      dataArray[4 * i + 1] = finalColor.g;
+      dataArray[4 * i + 2] = finalColor.b;
+      dataArray[4 * i + 3] = finalColor.a;
+    }
+
+    png.data = dataArray;
+    var buffer = PNG.sync.write(png);
+
+    return new Blob([buffer], { type: "image/png" });
   }, [inputHeight, inputWidth, texturePixels]);
 
   const saveFile = useCallback(() => {
@@ -495,6 +533,105 @@ export default function App() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, [getImageBlob]);
+
+  const copyFile = useCallback(() => {
+    const tryCopy = async () => {
+      if (ClipboardItem.supports("image/png")) {
+        const blob = getImageBlob();
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            [blob.type]: blob,
+          }),
+        ]);
+      } else {
+        console.log("PNG Not Supported");
+      }
+    };
+    tryCopy();
+  }, [getImageBlob]);
+
+  const saveMeta = useCallback(() => {
+    const blob = getMetaBlob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "animated_texture_mask.png";
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [getMetaBlob]);
+
+  const copyMeta = useCallback(() => {
+    const tryCopy = async () => {
+      if (ClipboardItem.supports("image/png")) {
+        const blob = getMetaBlob();
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            [blob.type]: blob,
+          }),
+        ]);
+      } else {
+        console.log("PNG Not Supported");
+      }
+    };
+    tryCopy();
+  }, [getMetaBlob]);
+
+  const getBaseBlob = useCallback(() => {
+    const png = new PNG({
+      width: inputWidth,
+      height: inputHeight,
+    });
+    const dataArray = new Uint8Array(inputWidth * inputHeight * 4);
+
+    for (let i = 0; i < texturePixels.length; i++) {
+      const finalColor = getBaseColor(texturePixels[i]);
+      dataArray[4 * i + 0] = finalColor.r;
+      dataArray[4 * i + 1] = finalColor.g;
+      dataArray[4 * i + 2] = finalColor.b;
+      dataArray[4 * i + 3] = finalColor.a;
+    }
+
+    png.data = dataArray;
+    var buffer = PNG.sync.write(png);
+
+    return new Blob([buffer], { type: "image/png" });
+  }, [inputHeight, inputWidth, texturePixels]);
+
+  const saveBase = useCallback(() => {
+    const blob = getBaseBlob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "animated_texture_base.png";
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [getBaseBlob]);
+
+  const copyBase = useCallback(() => {
+    const tryCopy = async () => {
+      if (ClipboardItem.supports("image/png")) {
+        const blob = getBaseBlob();
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            [blob.type]: blob,
+          }),
+        ]);
+      } else {
+        console.log("PNG Not Supported");
+      }
+    };
+    tryCopy();
+  }, [getBaseBlob]);
 
   const previewColor = useMemo(() => {
     if (showEditor) return hexToRgba(editorResult);
@@ -1325,8 +1462,23 @@ export default function App() {
                       alignItems: "center",
                       justifyContent: "center",
                     }}
-                    onClick={() => {
-                      saveFile();
+                    onClick={(e) => {
+                      if (e.ctrlKey) {
+                        saveBase();
+                      } else if (e.shiftKey) {
+                        saveMeta();
+                      } else {
+                        saveFile();
+                      }
+                    }}
+                    onAuxClick={(e) => {
+                      if (e.ctrlKey) {
+                        copyBase();
+                      } else if (e.shiftKey) {
+                        copyMeta();
+                      } else {
+                        copyFile();
+                      }
                     }}
                   >
                     <Download className="mx-auto text-gray-50" />
