@@ -226,15 +226,76 @@ export default function App() {
             return;
           }
 
-          if (data.width !== 64 || (data.height !== 64 && data.height !== 32)) {
+          if (data.width === 16 && data.height === 16) {
+            // Tadpoles
+            setTextureType("tex_00");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 32 && data.height === 32) {
+            // Allay, Vex, Parrot, Bat
+            setTextureType("tex_01");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 48 && data.height === 32) {
+            // Foxes
+            setTextureType("tex_02");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 48 && data.height === 48) {
+            // Frogs
+            setTextureType("tex_03");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 64 && data.height === 32) {
+            // Small Textures A
+            setTextureType("tex_05");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 64 && data.height === 64) {
+            // Medium Textures A
+            setTextureType("tex_07");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 64 && data.height === 128) {
+            // Witch/Strider
+            setTextureType("tex_10");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 128 && data.height === 64) {
+            // Large Textures A
+            setTextureType("tex_12");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 128 && data.height === 128) {
+            // Giant Textures
+            setTextureType("tex_13");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 192 && data.height === 192) {
+            // Sniffer
+            setTextureType("tex_14");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else if (data.width === 256 && data.height === 256) {
+            // Dragon
+            setTextureType("tex_15");
+            setInputWidth(data.width);
+            setInputHeight(data.height);
+            setImageData(data.data);
+          } else {
             toast.error("Invalid Texture!");
             setFile(null);
             setImage(null);
-          } else {
-            setInputWidth(data.width);
-            setInputHeight(data.height);
-            setTextureType(data.height === 64 ? "humanoid" : "chicken");
-            setImageData(data.data);
           }
         });
       };
@@ -294,19 +355,9 @@ export default function App() {
             setPickerColor(rgbaToHexa({ r, g, b, a }));
           }
         } else if (TextureHelper.IsDataRegion(x, y, textureType)) {
-          [r, g, b, a] = [
-            68,
-            113,
-            67,
-            textureType === "humanoid"
-              ? 255
-              : textureType === "quadruped"
-                ? 254
-                : 253,
-          ];
-          if (TextureHelper.IsDataMask(x, y, textureType)) {
-            [r, g, b, a] = [1, 3, 0, 255];
-          }
+          const id_alpha = 255 - TextureHelper.GetId(textureType);
+
+          [r, g, b, a] = [68, 113, 67, id_alpha];
         }
 
         texture[index] = {
@@ -641,6 +692,19 @@ export default function App() {
     return { r: 0, g: 0, b: 0, a: 255 };
   }, [showEditor, editorResult, programPixels, selectedProgram]);
 
+  const [gridWidth, setGridWidth] = React.useState("repeat(64, 8px)");
+  const [gridHeight, setGridHeight] = React.useState("repeat(64, 8px)");
+  const [gridScale, setGridScale] = React.useState("8px");
+
+  React.useEffect(() => {
+    const max = Math.max(inputWidth, inputHeight);
+    const scale = (8 * 64) / max;
+
+    setGridScale(`${scale}px`);
+    setGridWidth(`repeat(${inputWidth}, ${scale}px)`);
+    setGridHeight(`repeat(${inputHeight}, ${scale}px)`);
+  }, [inputWidth, inputHeight]);
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-8">
       <Toaster position="top-center" />
@@ -654,11 +718,17 @@ export default function App() {
             Requires the{" "}
             <u>
               <a href={resourcePack} download="EntityAnimationRP.zip">
-                Animated Entity Shader
+                Vanilla Entity Shader Effects
+              </a>
+            </u>{" "}
+            resource pack. <br />
+            Lean more on{" "}
+            <u>
+              <a href="https://modrinth.com/animated-entity-textures">
+                Modrinth
               </a>
             </u>
-            . <br />
-            Currently supports Humanoids, Cows, Pigs, and Chickens.
+            .
           </p>
         </header>
 
@@ -670,7 +740,7 @@ export default function App() {
             <div className="flex flex-row">
               <div
                 className="flex flex-col"
-                style={{ justifyContent: "space-between" }}
+                style={{ justifyContent: "space-between", gap:8 }}
               >
                 <div
                   className="bg-gray-500 rounded-lg p-2 shadow-xl"
@@ -817,8 +887,8 @@ export default function App() {
                 className="bg-gray-500 rounded-lg p-8 shadow-xl aspect-1"
                 style={{
                   display: "grid",
-                  gridTemplateRows: "repeat(64, 8px)",
-                  gridTemplateColumns: "repeat(64, 8px)",
+                  gridTemplateRows: gridHeight,
+                  gridTemplateColumns: gridWidth,
                   gap: 0,
                   backgroundImage:
                     "linear-gradient(30deg, #808080 25%, transparent 25%), linear-gradient(-30deg, #808080 25%, transparent 25%), linear-gradient(30deg, transparent 75%, #808080 75%), linear-gradient(-30deg, transparent 75%, #808080 75%)",
@@ -841,6 +911,7 @@ export default function App() {
                         paintPixel(index);
                       }
                     }}
+                    scale={gridScale}
                   />
                 ))}
               </div>
@@ -1535,14 +1606,107 @@ export default function App() {
                       className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition-colors"
                       onChange={(e) => setTextureType(e.target.value)}
                     >
-                      <option value="humanoid" disabled={inputHeight === 32}>
-                        Player/Humanoid
+                      <option
+                        value="tex_16"
+                        disabled={!(inputWidth === 16 && inputHeight === 16)}
+                      >
+                        Tadpole
                       </option>
-                      <option value="quadruped" disabled={inputHeight === 32}>
-                        Cow/Pig
+                      <option
+                        value="tex_01"
+                        disabled={!(inputWidth === 32 && inputHeight === 32)}
+                      >
+                        Tiny Entities
                       </option>
-                      <option value="chicken" disabled={inputHeight === 64}>
-                        Chicken
+                      <option
+                        value="tex_02"
+                        disabled={!(inputWidth === 48 && inputHeight === 32)}
+                      >
+                        Foxes
+                      </option>
+                      <option
+                        value="tex_03"
+                        disabled={!(inputWidth === 48 && inputHeight === 48)}
+                      >
+                        Frogs
+                      </option>
+                      <option
+                        value="tex_05"
+                        disabled={!(inputWidth === 64 && inputHeight === 32)}
+                      >
+                        Chickens/Endermen
+                      </option>
+                      <option
+                        value="tex_04"
+                        disabled={!(inputWidth === 64 && inputHeight === 32)}
+                      >
+                        Other Small Entities
+                      </option>
+                      <option
+                        value="tex_07"
+                        disabled={!(inputWidth === 64 && inputHeight === 64)}
+                      >
+                        Cows/Pigs/Creaking
+                      </option>
+                      <option
+                        value="tex_08"
+                        disabled={!(inputWidth === 64 && inputHeight === 64)}
+                      >
+                        Goats/Pandas
+                      </option>
+                      <option
+                        value="tex_09"
+                        disabled={!(inputWidth === 64 && inputHeight === 64)}
+                      >
+                        Horses
+                      </option>
+                      <option
+                        value="tex_00"
+                        disabled={!(inputWidth === 64 && inputHeight === 64)}
+                      >
+                        Players
+                      </option>
+                      <option
+                        value="tex_06"
+                        disabled={!(inputWidth === 64 && inputHeight === 64)}
+                      >
+                        Other Medium Entities
+                      </option>
+                      <option
+                        value="tex_10"
+                        disabled={!(inputWidth === 64 && inputHeight === 128)}
+                      >
+                        Striders/Witches
+                      </option>
+                      <option
+                        value="tex_12"
+                        disabled={!(inputWidth === 128 && inputHeight === 64)}
+                      >
+                        Hoglin/Zoglin
+                      </option>
+                      <option
+                        value="tex_11"
+                        disabled={!(inputWidth === 128 && inputHeight === 64)}
+                      >
+                        Other Large Entities
+                      </option>
+                      <option
+                        value="tex_13"
+                        disabled={!(inputWidth === 128 && inputHeight === 128)}
+                      >
+                        Giant Entities
+                      </option>
+                      <option
+                        value="tex_14"
+                        disabled={!(inputWidth === 192 && inputHeight === 192)}
+                      >
+                        Sniffer
+                      </option>
+                      <option
+                        value="tex_15"
+                        disabled={!(inputWidth === 256 && inputHeight === 256)}
+                      >
+                        Dragon
                       </option>
                     </select>
                   </label>

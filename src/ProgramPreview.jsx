@@ -39,10 +39,10 @@ const ProgramPreview = ({ program, colors, time }) => {
     setId(program.b >> 4);
     setSpeed(program.b & 7);
     setPrimaryColor(
-      colors[program.r & 63].color ?? { r: 0, g: 0, b: 0, a: 255 },
+      colors[program.r & 63]?.color ?? { r: 0, g: 0, b: 0, a: 255 },
     );
     setSecondaryColor(
-      colors[program.g & 63].color ?? { r: 0, g: 0, b: 0, a: 255 },
+      colors[program.g & 63]?.color ?? { r: 0, g: 0, b: 0, a: 255 },
     );
     setOverridePrimary((0 === program.r) & 63);
     setOverrideSecondary((0 === program.g) & 63);

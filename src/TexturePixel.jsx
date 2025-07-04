@@ -10,6 +10,7 @@ const TexturePixel = ({
   programVisible,
   index,
   highlight,
+  scale
 }) => {
   const updatedColor = useMemo(() => {
     if (programId === 0) return rgbaToColor(rgba);
@@ -32,8 +33,8 @@ const TexturePixel = ({
       onMouseDown={editable ? onClick : null}
       onMouseEnter={editable ? onHover : null}
       style={{
-        width: "8px",
-        height: "8px",
+        width: {scale},
+        height: {scale},
         backgroundColor: updatedColor,
         borderColor: "white",
         borderWidth: highlight ? "2px" : "0px",
