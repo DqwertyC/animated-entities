@@ -26,7 +26,7 @@ import ProgramPixel from "./ProgramPixel";
 import PalettePixel from "./PalettePixel";
 import ProgramPreview from "./ProgramPreview";
 import { rgbaToHexa, rgbaToColor } from "./ColorUtils";
-import resourcePack from "./res/EntityAnimationRP.zip";
+import resourcePack from "./res/VanillaEntityShaderEffects.zip";
 
 const programInfo = [
   {
@@ -717,14 +717,14 @@ export default function App() {
           <p className="text-xl text-gray-400">
             Requires the{" "}
             <u>
-              <a href={resourcePack} download="EntityAnimationRP.zip">
+              <a href={resourcePack} download="VanillaEntityShaderEffects.zip">
                 Vanilla Entity Shader Effects
               </a>
             </u>{" "}
             resource pack. <br />
             Lean more on{" "}
             <u>
-              <a href="https://modrinth.com/animated-entity-textures">
+              <a href="https://modrinth.com/resourcepack/vanilla-entity-shader-effects">
                 Modrinth
               </a>
             </u>
