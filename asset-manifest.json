@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/animated-entities/static/css/main.d9f42718.css",
-    "main.js": "/animated-entities/static/js/main.8baf172b.js",
-    "static/media/VanillaEntityShaderEffects.zip": "/animated-entities/static/media/VanillaEntityShaderEffects.a2738a2cd2266dbbe788.zip",
+    "main.js": "/animated-entities/static/js/main.259f9063.js",
+    "static/media/VanillaEntityShaderEffects.zip": "/animated-entities/static/media/VanillaEntityShaderEffects.bd0abc896d355628fc3a.zip",
     "index.html": "/animated-entities/index.html",
     "main.d9f42718.css.map": "/animated-entities/static/css/main.d9f42718.css.map",
-    "main.8baf172b.js.map": "/animated-entities/static/js/main.8baf172b.js.map"
+    "main.259f9063.js.map": "/animated-entities/static/js/main.259f9063.js.map"
   },
   "entrypoints": [
     "static/css/main.d9f42718.css",
-    "static/js/main.8baf172b.js"
+    "static/js/main.259f9063.js"
   ]
 }
