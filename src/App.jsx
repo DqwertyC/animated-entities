@@ -483,11 +483,10 @@ export default function App() {
         let { r, g, b, a } = hexToRgba(value);
 
         setEditorEmissiveA((r & 128) > 0);
-        setEditorColorA(r & 15);
+        setEditorColorA(r & 31);
         setEditorEmissiveB((g & 128) > 0);
-        setEditorColorB(g & 15);
-        // Todo: Change this to 15 when we have more programs
-        setEditorProgramType((b >> 4) & 7);
+        setEditorColorB(g & 31);
+        setEditorProgramType((b >> 4) & 15);
         setEditorSpeed(b & 7);
 
         setEditorBoolA((a & 128) > 0);

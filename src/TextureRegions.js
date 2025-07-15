@@ -106,12 +106,12 @@ const regions = {
     palette:{ x_0: 120, x_1: 127, y_0: 4, y_1: 7 }
   },
   tex_13:{
-    /** Giant Entites */
+    /** Giant Entities */
     id: 13,
     size:   {width: 128, height: 128},
     data:   { x_0: 0, x_1: 0, y_0: 0, y_1: 0 },
-    program:{ x_0: 120, x_1: 127, y_0: 120, y_1: 123 },
-    palette:{ x_0: 120, x_1: 127, y_0: 124, y_1: 127 }
+    program:{ x_0: 112, x_1: 119, y_0: 120, y_1: 127 },
+    palette:{ x_0: 120, x_1: 127, y_0: 120, y_1: 127 }
   },
   tex_14:{
     /** Sniffer */
